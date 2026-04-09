@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Watch AI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background: #000; color: #fff; font-family: -apple-system; overflow: hidden; }
+        .watch-container { height: 100vh; display: flex; flex-direction: column; padding: 4px; }
+        .response-scroll { overflow-y: auto; flex-grow: 1; font-size: 13px; line-height: 1.2; }
+        ::-webkit-scrollbar { width: 2px; }
+        ::-webkit-scrollbar-thumb { background: #333; }
+    </style>
+</head>
+<body>
+    <div id="app" class="watch-container">
+        <div id="input-layer">
+            <div class="text-[9px] text-zinc-500 text-center uppercase tracking-tighter mb-1">Qwen 80B</div>
+            <textarea id="msg" class="w-full bg-zinc-900 border border-zinc-800 rounded-lg p-2 text-sm focus:outline-none mb-1" rows="3" placeholder="Запрос..."></textarea>
+            <button onclick="send()" id="btn" class="w-full bg-blue-600 active:bg-blue-800 font-bold py-3 rounded-full text-xs transition-all">ОТПРАВИТЬ</button>
+        </div>
+
+        <div id="output-layer" class="hidden flex flex-col h-full">
+            <div id="text" class="response-scroll pr-1 mb-2 whitespace-pre-wrap"></div>
+            <button onclick="reset()" class="w-full bg-zinc-800 text-zinc-400 py-2 rounded-full text-[10px] shrink-0">НАЗАД</button>
+        </div>
+    </div>
+
+    <script>
+        async function send() {
+            const msg = document.getElementById('msg').value;
+            if (!msg) return;
+
+            const btn = document.getElementById('btn');
+            btn.innerText = "ЧИТАЮ...";
+            btn.disabled = true;
+
+            try {
+                const response = await fetch('/ask', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({message: msg})
+                });
+
+                const data = await response.json();
+                const content = data.choices[0].message.content;
+
+                document.getElementById('input-layer').classList.add('hidden');
+                document.getElementById('output-layer').classList.remove('hidden');
+                document.getElementById('text').innerText = content;
+            } catch (e) {
+                alert("Ошибка");
+            } finally {
+                btn.innerText = "ОТПРАВИТЬ";
+                btn.disabled = false;
+            }
+        }
+
+        function reset() {
+            document.getElementById('output-layer').classList.add('hidden');
+            document.getElementById('input-layer').classList.remove('hidden');
+            document.getElementById('msg').value = '';
+        }
+    </script>
+</body>
+</html>
