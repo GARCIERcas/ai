@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <title>Watch AI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background: #000; color: #fff; font-family: -apple-system; }
+        .btn-active:active { transform: scale(0.95); background: #1d4ed8; }
+    </style>
+</head>
+<body class="p-2">
+    <div id="main-ui">
+        <div class="text-[10px] text-zinc-500 text-center mb-1">QWEN 3 NEXT</div>
+        <textarea id="msg" class="w-full bg-zinc-900 rounded-lg p-2 text-sm focus:outline-none mb-2" rows="3" placeholder="Вопрос..."></textarea>
+        <button onclick="send()" id="btn" class="w-full bg-blue-600 font-bold py-3 rounded-full text-sm btn-active">ОТПРАВИТЬ</button>
+    </div>
+
+    <div id="res-ui" class="hidden">
+        <div id="text" class="text-[13px] leading-tight mb-4"></div>
+        <button onclick="reset()" class="w-full bg-zinc-800 text-zinc-400 py-2 rounded-full text-[11px]">НАЗАД</button>
+    </div>
+
+    <script>
+        async function send() {
+            const msg = document.getElementById('msg').value;
+            if (!msg) return;
+
+            document.getElementById('btn').innerText = "...";
+            
+            const response = await fetch('/ask', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({message: msg})
+            });
+
+            const data = await response.json();
+            document.getElementById('main-ui').classList.add('hidden');
+            document.getElementById('res-ui').classList.remove('hidden');
+            document.getElementById('text').innerText = data.choices[0].message.content;
+        }
+
+        function reset() {
+            document.getElementById('main-ui').classList.remove('hidden');
+            document.getElementById('res-ui').classList.add('hidden');
+            document.getElementById('msg').value = '';
+            document.getElementById('btn').innerText = 'ОТПРАВИТЬ';
+        }
+    </script>
+</body>
+</html>
